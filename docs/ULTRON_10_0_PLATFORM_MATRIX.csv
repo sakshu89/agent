@@ -1,0 +1,18 @@
+platform,module,capability,status,evidence_or_requirement
+Android,app,Compose HUD and existing assistant flows,retained,Existing Kotlin/Compose source retained
+Android,app,Voice recognition and TTS,retained_not_certified,Requires real device and configured speech engine/model
+Android,app,Accessibility automation,existing_best_effort,Requires OS accessibility opt-in and target-app UI tests
+Android,app,SQLite memory and WorkManager task queue,retained_no_schema_migration,Existing DB paths retained; journal adapter not wired
+Android,app,shared ModelProvider adapter,not_complete,Existing LlmClient needs adapter and settings unification
+Windows,desktop,Java AWT screen/input and allowlisted launch,implemented_existing,Requires Windows GUI session test
+Windows,desktop,Windows UI Automation,not_complete,Native UIA adapter and permission tests required
+Linux,desktop,Java AWT X11 screen/input,implemented_existing,Requires X11 runtime test
+Linux,desktop,Wayland input/screen,limited,Existing adapter marks capability unavailable where not guaranteed
+Linux,desktop,AT-SPI accessibility,not_complete,Native AT-SPI adapter and desktop-environment tests required
+Cross-platform,core,Provider-neutral model registry and hybrid routing,implemented,Java 17 source compilation
+Cross-platform,core,Bounded agent orchestration and emergency stop,implemented_existing,Core source retained
+Cross-platform,core,Versioned skill manifest,implemented_api,Schema present; legacy skill migration pending
+Cross-platform,core,Append-only workflow journal,implemented_api,Smoke-tested; Android queue adapter pending
+Cross-platform,core,Permission policy,implemented_api,Smoke-tested; full UI-gate wiring pending
+Cross-platform,core,Bounded redacted diagnostic trace,implemented_api,Source added; caller integration pending
+Cross-device,core,Secure pairing and sync,not_implemented,Requires threat model, identity, key lifecycle and sync tests

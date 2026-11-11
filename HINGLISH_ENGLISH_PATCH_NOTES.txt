@@ -1,0 +1,12 @@
+ULTRON Hinglish -> English offline speech patch
+
+Changes:
+- Adds SpeechTextNormalizer.kt, a deterministic on-device normalizer for common Hindi/Hinglish command words and phrases. Output is English.
+- Applies normalization to both Vosk final text and Android SpeechRecognizer results.
+- Configures Android SpeechRecognizer preference to en-IN and requests offline recognition.
+
+Important limitations:
+- The phrase dictionary is intentionally conservative and is not a general-purpose translator.
+- Vosk itself still recognizes using the model you import. For best English recognition, import/select vosk-model-small-en-in-0.4.
+- A Vosk English model will not reliably recognize arbitrary Hindi/Hinglish speech. A true robust bilingual offline recognizer requires a multilingual model such as Whisper running locally, which is not bundled in this patch because the model is large and needs a separate Android runtime integration.
+- Android's offline preference is a request to the installed speech service; actual offline availability depends on that service and downloaded language packs.

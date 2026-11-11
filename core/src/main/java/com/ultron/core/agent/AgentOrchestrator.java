@@ -1,0 +1,17 @@
+package com.ultron.core.agent;
+import com.ultron.core.*;import java.util.*;import java.util.concurrent.atomic.AtomicBoolean;
+/** Shared bounded multi-step executor: observe, authorize, execute once, verify. */
+public final class AgentOrchestrator{
+ public interface PermissionGate{boolean allow(AgentTool tool,Map<String,String> arguments);} public interface Listener{void onEvent(String stepId,AgentState state,String detail);}
+ public record StepOutcome(String stepId,boolean success,String detail,String before,String after){}
+ public record TaskOutcome(boolean success,boolean stopped,List<StepOutcome> steps,String detail){public TaskOutcome{steps=List.copyOf(steps);}}
+ private final PlatformController platform;private final ToolRegistry tools;private final PermissionGate permissions;private final Listener listener;private final AtomicBoolean stopped=new AtomicBoolean();
+ public AgentOrchestrator(PlatformController p,ToolRegistry t,PermissionGate g,Listener l){platform=Objects.requireNonNull(p);tools=Objects.requireNonNull(t);permissions=Objects.requireNonNull(g);listener=l==null?(id,s,d)->{}:l;}
+ public TaskOutcome execute(AgentPlan plan){Objects.requireNonNull(plan);List<StepOutcome> out=new ArrayList<>();Set<String> ids=new HashSet<>();if(stopped.get())return result(false,true,out,"Emergency stop is active.");
+  for(AgentStep step:plan.steps()){if(stopped.get())return result(false,true,out,"Stopped by user.");if(!ids.add(step.id()))return result(false,false,out,"Duplicate step ID blocked: "+step.id());AgentTool tool=tools.find(step.toolId()).orElse(null);if(tool==null)return result(false,false,out,"Unknown tool: "+step.toolId());
+   try{event(step,AgentState.OBSERVING,"Observe before action");Observation before=platform.observe();event(step,AgentState.PLANNING,"Permission check");if(tool.requiresConfirmation(step.arguments())&&!permissions.allow(tool,step.arguments()))return result(false,false,out,"Permission denied for "+tool.id());if(stopped.get())return result(false,true,out,"Stopped before execution");event(step,AgentState.EXECUTING,"Execute once");ActionResult action=tool.execute(step.arguments(),before);if(stopped.get())return result(false,true,out,"Stopped during execution");event(step,AgentState.VERIFYING,"Verify result");Observation after=platform.observe();boolean verified=action.success()&&(!action.resultingFingerprint().isBlank()?action.resultingFingerprint().equals(after.fingerprint()):!before.fingerprint().equals(after.fingerprint()));out.add(new StepOutcome(step.id(),verified,action.message(),before.fingerprint(),after.fingerprint()));if(!verified)return result(false,false,out,action.success()?"Action not independently verified; no automatic replay.":action.message());event(step,AgentState.COMPLETED,action.message());
+   }catch(Exception e){return result(false,false,out,"Step "+step.id()+" failed: "+e.getClass().getSimpleName()+": "+Objects.toString(e.getMessage(),""));}}
+  return result(true,false,out,"All "+out.size()+" steps verified.");}
+ public void emergencyStop(){stopped.set(true);platform.emergencyStop();}public void resetEmergencyStop(){platform.resetEmergencyStop();stopped.set(false);}public boolean isStopped(){return stopped.get();}
+ private void event(AgentStep s,AgentState a,String d){listener.onEvent(s.id(),a,d);}private static TaskOutcome result(boolean ok,boolean stop,List<StepOutcome> out,String d){return new TaskOutcome(ok,stop,out,d);}
+}

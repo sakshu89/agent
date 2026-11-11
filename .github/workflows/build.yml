@@ -1,0 +1,90 @@
+name: ULTRON 10.0 Cross-platform CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ultron-100-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: ''
+      - name: Install Android SDK
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+      - name: Build and test Android + shared core
+        run: |
+          chmod +x ./gradlew
+          set -o pipefail
+          ./gradlew :core:test :app:testDebugUnitTest :app:assembleDebug --console=plain 2>&1 | tee build.log
+      - name: Show compile errors
+        if: failure()
+        run: |
+          echo "===== KOTLIN / JAVA ERRORS ====="
+          grep -E "^e: |^w: .*error|error:|FAILED|What went wrong" -A3 build.log | head -80 || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ULTRON-10.0-android
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+  windows:
+    name: Windows desktop package
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - name: Build desktop
+        run: .\gradlew.bat :core:test :desktop:installDist
+      - name: Package Windows app image
+        shell: pwsh
+        run: |
+          jpackage --type app-image --name ULTRON --input desktop/build/install/desktop/lib --main-jar desktop.jar --main-class com.ultron.desktop.UltronDesktop --dest release/windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ULTRON-10.0-windows
+          path: release/windows/**
+
+  linux:
+    name: Linux desktop package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - name: Build desktop
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :core:test :desktop:installDist
+      - name: Package Linux app image
+        run: |
+          jpackage --type app-image --name ULTRON --input desktop/build/install/desktop/lib --main-jar desktop.jar --main-class com.ultron.desktop.UltronDesktop --dest release/linux
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ULTRON-10.0-linux
+          path: release/linux/**
+

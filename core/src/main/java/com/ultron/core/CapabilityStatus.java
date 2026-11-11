@@ -1,0 +1,5 @@
+package com.ultron.core;
+
+public enum CapabilityStatus {
+    AVAILABLE, UNAVAILABLE, PERMISSION_REQUIRED, TEMPORARILY_UNAVAILABLE, UNSUPPORTED
+}

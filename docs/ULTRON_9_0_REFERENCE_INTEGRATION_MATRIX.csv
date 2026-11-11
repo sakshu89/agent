@@ -1,0 +1,15 @@
+Capability,ULTRON status,Reference,Adaptation,ULTRON files
+Provider abstraction/capability discovery,Partial: local/cloud router exists; discovery incomplete,OpenJarvis,Add capability metadata/probes to existing router,core/ai/HybridModelRouter.java; ModelRoute.java; app/LlmClient.kt; desktop/ai/DesktopModelClient.java
+Bounded agent loop,Partial: shared orchestrator + Android loop,OpenJarvis; JAVIS OS,"Unify budgets, cancellation, retry policy",core/agent/AgentOrchestrator.java; AgentPlan.java; app/agent/UniversalAgentLoop.kt
+Unified tool registry,Partial: shared and Android registries coexist,JAVIS OS; OpenJarvis,Bridge via platform adapters; add schema/risk/permission metadata,core/agent/ToolRegistry.java; AgentTool.java; app/ToolRegistry.kt
+Durable task queue,Partial: Android SQLite/WorkManager only,JAVIS OS,Transactional task contracts; additive DB bridge and desktop store,app/agent/AgentTaskQueue.kt; TaskContextStore.kt; AutomationStateMachine.kt
+Persistent memory/retrieval,Partial: Android SQLite memories/sessions,OpenJarvis; JAVIS OS,Add memory interface and optional lexical/FTS retrieval; additive migration,app/memory/MemoryDatabase.kt; LongTermMemoryManager.kt; SessionManager.kt
+Skills/workflow versioning,Partial: Skill and SkillRegistry exist,JAVIS OS; OpenJarvis,Versioned/tested skill metadata through existing permissions,core/agent/Skill.java; SkillRegistry.java
+Security scanning/audit,"Partial: guards, secure envelope, Keystore and confirmations",OpenJarvis; JAVIS OS,Central risk classification and structured audit events,core/SecureEnvelope.java; app/agent/AgentExecutionGuard.kt; LogStore.kt
+Screen understanding/computer use,Partial Android; limited desktop AWT,OpenJarvis; J.A.R.V.I.S,Native observation adapters; UIA/AT-SPI/portal; OCR verification,ScreenUnderstanding.kt; UltronAccessibilityService.kt; desktop/*PlatformController.java
+Voice/speech alternatives,Partial: Vosk/Whisper/normalizer/TTS,J.A.R.V.I.S (conceptual only),Extend existing pipeline; do not import legacy engine,VoiceManager.kt; UltronListenService.kt; SpeechTextNormalizer.kt
+Media playback verification,Partial: search/open/tap paths,J.A.R.V.I.S,Verify selected title and actual playback state,CommandParser.kt; CommandExecutor.kt; ScreenUnderstanding.kt
+Research and citations,Partial: Google Search + synthesis,OpenJarvis,Enrich source metadata and independent verification,GoogleSearchClient.kt; ResearchAnswerSynthesis.kt; ResearchProvider.java
+Evaluation/tracing,Partial: logs/diagnostics; no unified evaluator established,OpenJarvis; JAVIS OS,"Local trace IDs, outcome records and deterministic regression fixtures",LogStore.kt; DiagnosticManager.kt; AgentOrchestrator.java
+Windows/Linux native accessibility,Missing/limited,OpenJarvis; J.A.R.V.I.S,Implement Windows UIA and Linux AT-SPI/X11/portal adapters,WindowsPlatformController.java; LinuxPlatformController.java; AbstractDesktopController.java
+Cross-device pairing,Not implemented per ULTRON status,JAVIS OS,"Explicit pairing, encrypted transport, replay protection and task ownership",SecureEnvelope.java; PlatformAction.java; new pairing module
